@@ -77,7 +77,7 @@
             z-index: 10;
         }
 
-        /* === ЭФФЕКТНЫЙ РАЗЛЕТАЮЩИЙСЯ КОКОС === */
+        /* === НАСТРОЙКА КЛАССНОГО ЗИГЗАГ-РАЗЛОМА === */
         .coconut-wrapper {
             position: relative;
             width: 340px;
@@ -97,55 +97,48 @@
             50% { transform: translateY(-8px) rotate(-0.5deg); }
         }
 
-        /* Делим одну картинку на две ровные половинки */
+        /* Теперь обе половинки занимают ВСЮ ширину, но обрезаются зигзагом */
         .half {
             position: absolute;
             top: 0;
-            width: 170px; /* Ровно половина от 340px */
+            left: 0;
+            width: 340px;
             height: 290px;
-            overflow: hidden;
-            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
             pointer-events: none;
         }
 
-        .half-left {
-            left: 0;
-            transform-origin: left center;
-        }
-
-        .half-right {
-            right: 0;
-            transform-origin: right center;
-        }
-
-        /* Внутри каждой половинки рендерится наш сочный клипарт */
         .half img {
-            position: absolute;
-            top: 0;
             width: 340px;
             height: 290px;
-            max-width: none;
+            display: block;
         }
 
-        .half-left img {
-            left: 0;
+        /* Левая половина: оставляем левую часть и вырезаем рваный край по центру */
+        .half-left {
+            transform-origin: left center;
+            -webkit-clip-path: polygon(0% 0%, 53% 0%, 48% 22%, 54% 41%, 47% 59%, 53% 78%, 49% 100%, 0% 100%);
+            clip-path: polygon(0% 0%, 53% 0%, 48% 22%, 54% 41%, 47% 59%, 53% 78%, 49% 100%, 0% 100%);
         }
 
-        .half-right img {
-            right: 0; /* Сдвигаем картинку, чтобы показать правую часть */
+        /* Правая половина: зеркально подстраиваемся под рваную линию */
+        .half-right {
+            transform-origin: right center;
+            -webkit-clip-path: polygon(53% 0%, 100% 0%, 100% 100%, 49% 100%, 53% 78%, 47% 59%, 54% 41%, 48% 22%);
+            clip-path: polygon(53% 0%, 100% 0%, 100% 100%, 49% 100%, 53% 78%, 47% 59%, 54% 41%, 48% 22%);
         }
 
-        /* Анимация взрыва: половинки разлетаются в стороны с разворотом и исчезают */
+        /* При клике половинки сочно разлетаются по своим траекториям */
         .coconut-wrapper.cracked .half-left { 
-            transform: translateX(-200px) translateY(-30px) rotate(-25deg); 
+            transform: translateX(-180px) translateY(-20px) rotate(-15deg); 
             opacity: 0; 
         }
         .coconut-wrapper.cracked .half-right { 
-            transform: translateX(200px) translateY(-30px) rotate(25deg); 
+            transform: translateX(180px) translateY(-20px) rotate(15deg); 
             opacity: 0; 
         }
 
-        /* === ПРЕМИАЛЬНОЕ СТЕКЛЯННОЕ ОКНО ПРЕДСКАЗАНИЯ === */
+        /* === МАТОВАЯ ПЛАШКА ПРЕДСКАЗАНИЯ === */
         .scroll {
             position: absolute;
             width: 85%;
@@ -196,7 +189,7 @@
             -webkit-appearance: none;
         }
 
-        /* Мелкие разлетающиеся осколки скорлупы */
+        /* Осколки скорлупы */
         .shard {
             position: absolute;
             background: #5c3517;
@@ -220,11 +213,9 @@
 
     <div class="game-container">
         <div class="coconut-wrapper floating" id="coconut">
-            <!-- Левая половинка картинки -->
             <div class="half half-left">
                 <img src="1642361019_1-papik-pro-p-kokos-klipart-1.png" alt="Кокос">
             </div>
-            <!-- Правая половинка картинки -->
             <div class="half half-right">
                 <img src="1642361019_1-papik-pro-p-kokos-klipart-1.png" alt="Кокос">
             </div>
@@ -270,24 +261,20 @@
 
         let isCracked = false;
 
-        function handleCrack(e) {
+        function handleCrack() {
             if (isCracked) return;
             isCracked = true;
 
-            // Вычисляем центр для разлета осколков
             const rect = coconut.getBoundingClientRect();
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
             spawnSplinters(centerX, centerY);
 
-            // Запускаем анимацию разлома половинок клипарта
             coconut.classList.remove('floating');
             coconut.classList.add('cracked');
 
-            // Текст
             predictionText.textContent = predictions[Math.floor(Math.random() * predictions.length)];
 
-            // Показываем стильную плашку предсказания
             setTimeout(() => {
                 scroll.classList.add('show');
                 resetBtn.style.display = 'block';
@@ -309,11 +296,10 @@
         });
 
         function spawnSplinters(cx, cy) {
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 14; i++) {
                 const shard = document.createElement('div');
                 shard.classList.add('shard');
                 
-                // Случайные формы осколков скорлупы
                 const w = 4 + Math.random() * 6;
                 const h = 8 + Math.random() * 12;
                 shard.style.width = w + 'px';
@@ -321,9 +307,8 @@
                 shard.style.left = cx + 'px';
                 shard.style.top = cy + 'px';
                 
-                // Взрывной разлет по радиусу
-                const tx = (Math.random() - 0.5) * 400 + 'px';
-                const ty = (Math.random() - 0.4) * 200 + 'px';
+                const tx = (Math.random() - 0.5) * 420 + 'px';
+                const ty = (Math.random() - 0.4) * 220 + 'px';
                 shard.style.setProperty('--tx', tx);
                 shard.style.setProperty('--ty', ty);
                 

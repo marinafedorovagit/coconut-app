@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кокос Предсказаний</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4ae64;
+            background-image: url("Gemini_Generated_Image_g6ol0og6ol0og6ol.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            perspective: 1200px;
+            /* Фикс для iOS внутри мессенджеров */
+            position: fixed;
+            width: 100%;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, transparent 20%, rgba(61, 35, 16, 0.15) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .title {
+            position: absolute;
+            top: 7vh;
+            text-align: center;
+            z-index: 5;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .title h1 {
+            font-size: 2.2em;
+            color: #3d2310;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .title p {
+            font-size: 0.9em;
+            color: #613b1c;
+            opacity: 0.8;
+            margin-top: 5px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .game-container {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* === РЕАЛИСТИЧНЫЙ КОКОС === */
+        .coconut-wrapper {
+            position: relative;
+            width: 320px;
+            height: 340px;
+            cursor: pointer;
+            z-index: 5;
+            -webkit-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+            /* Заставляем iOS Telegram видеть в этом кликабельный объект */
+            pointer-events: auto !important;
+            touch-action: manipulation;
+        }
+
+        .coconut-wrapper.floating {
+            animation: naturalFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes naturalFloat {
+            0%, 100% { transform: translateY(0) rotate(0.4deg); }
+            50% { transform: translateY(-8px) rotate(-0.4deg); }
+        }
+
+        .half {
+            position: absolute;
+            width: 160px;
+            height: 340px;
+            overflow: hidden;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+            pointer-events: none; /* Чтобы половинки не мешали клику */
+        }
+
+        .half-left { left: 0; transform-origin: left center; }
+        .half-right { right: 0; transform-origin: right center; }
+
+        .coconut-visual {
+            position: absolute;
+            width: 320px;
+            height: 340px;
+            background: 
+                radial-gradient(circle at 35% 30%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                repeating-linear-gradient(105deg, rgba(41, 21, 7, 0.15) 0px, rgba(41, 21, 7, 0.15) 1px, transparent 1px, transparent 4px),
+                repeating-linear-gradient(15deg, rgba(0, 0, 0, 0.12) 0px, rgba(0, 0, 0, 0.12) 1px, transparent 1px, transparent 5px),
+                radial-gradient(circle at 40% 35%, #7a4a26 0%, #4e2e14 65%, #251407 100%);
+            border-radius: 46% 52% 47% 53% / 54% 47% 53% 46%;
+            box-shadow: 0 35px 60px rgba(41, 21, 7, 0.45), inset -12px -15px 30px rgba(0,0,0,0.65), inset 8px 8px 15px rgba(255,255,255,0.05);
+        }
+
+        .half-left .coconut-visual { left: 0; }
+        .half-right .coconut-visual { right: 0; }
+
+        .pores {
+            position: absolute;
+            top: 42%; left: 42px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transform: translateY(-50%) rotate(-5deg);
+            opacity: 0.8;
+        }
+        .pore {
+            width: 12px;
+            height: 14px;
+            background: #120802;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
+            filter: blur(0.2px);
+        }
+        .pore-center { margin-left: 5px; width: 14px; height: 12px; }
+
+        .coconut-wrapper.cracked .half-left { 
+            transform: translateX(-190px) rotate(-10deg); 
+            opacity: 0; 
+        }
+        .coconut-wrapper.cracked .half-right { 
+            transform: translateX(190px) rotate(10deg); 
+            opacity: 0; 
+        }
+
+        .inner-flesh {
+            position: absolute;
+            width: 285px;
+            height: 295px;
+            background: radial-gradient(circle at 50% 50%, #ffffff 70%, #f7f2e4 92%, #ceb492 100%);
+            border-radius: 47% 51% 48% 52% / 52% 48% 52% 47%;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 0 20px rgba(41,21,7,0.12), 0 25px 50px rgba(41, 21, 7, 0.25);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .coconut-wrapper.cracked ~ .inner-flesh { 
+            opacity: 1; 
+            transform: scale(1); 
+        }
+
+        .scroll {
+            position: absolute;
+            width: 250px;
+            background: #fffdf9;
+            padding: 26px 22px;
+            border-radius: 4px;
+            box-shadow: 0 20px 40px rgba(54, 30, 13, 0.15);
+            text-align: center;
+            color: #361e0d;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.45;
+            opacity: 0;
+            transform: scale(0.75);
+            transition: all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            z-index: 10;
+            border-left: 3px solid #e0843c;
+            border-right: 3px solid #e0843c;
+        }
+
+        .scroll.show {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .reset-btn {
+            position: absolute;
+            bottom: 8vh;
+            padding: 15px 40px;
+            background: #361e0d;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(54, 30, 13, 0.2);
+            display: none;
+            z-index: 20;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+        }
+
+        .shard {
+            position: absolute;
+            background: #4e2e14;
+            pointer-events: none;
+            z-index: 30;
+            animation: splinterFly 0.6s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+        }
+        @keyframes splinterFly {
+            0% { opacity: 1; transform: translate(0,0) rotate(0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(120deg) scale(0.3); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title">
+        <h1>🥥 Кокос предсказаний</h1>
+        <p>Коснись, чтобы открыть</p>
+    </div>
+
+    <div class="game-container">
+        <div class="coconut-wrapper floating" id="coconut">
+            <div class="half half-left">
+                <div class="coconut-visual">
+                    <div class="pores">
+                        <div class="pore"></div>
+                        <div class="pore pore-center"></div>
+                        <div class="pore"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="half half-right">
+                <div class="coconut-visual"></div>
+            </div>
+        </div>
+        
+        <div class="inner-flesh"></div>
+        
+        <div class="scroll" id="scroll">
+            <span id="predictionText">Ловим знаки вселенной...</span>
+        </div>
+    </div>
+
+    <button class="reset-btn" id="resetBtn">🌴 Еще один кокос</button>
+
+    <script>
+        const predictions = [
+            "📜 Хорошие новости уже в пути.",
+            "🦁 Твоя харизма сегодня настолько сильна, что даже гепард уступит тебе дорогу.",
+            "👑 Кто-то в Африке прямо сейчас молится богам, чтобы встретить такую же конфетку, как ты.",
+            "☀️ Осторожно: твоя энергия сегодня горячее, чем полдень в пустыне Сахара. Купи вентилятор.",
+            "🌴 Лови вайб «Акуна Матата»: сегодня официально разрешено забить на все проблемы.",
+            "🐾 Даже если вокруг непроходимые джунгли, помни: у тебя внутри навигатор сильного льва.",
+            "🔥 Сам вождь Буба лично одобрил твою кандидатуру на роль его фаворита. Сопротивление бесполезно.",
+            "🍍 Вождь Буба считает, что ты выглядишь слишком горячо. Тебе грозит депортация за разжигание пожаров в джунглях.",
+            "💰 Твои карманы скоро станут шире, чем уши африканского слона. Готовься грести бабки лопатой.",
+            "🏋️‍♂️ Наша команда качков официально заявляет: перед твоей фигурой не устоит ни один фитнес-тренер.",
+            "💅 Наши красотки завистливо вздыхают в сторонке: сегодня твоя харизма затмила абсолютно всех.",
+            "🥥 Этот кокос раскололся не просто так. Твоя удача активирована нашей командой лично!",
+            "🤫 Тайное послание от создателей: ты выглядишь просто потрясающе. (Да-да, мы подглядываем через экран кокоса).",
+            "⚡ Мы проехали всю Африку, нашли этот священный орех, а ты бац — и разбил его с одного тапа! Ну ты мощь.",
+            "✨ Всё, что ты ищешь, уже внутри тебя.",
+            "🌊 Скоро в твою жизнь войдёт что-то очень хорошее.",
+            "🌿 Ты на правильном пути, продолжай.",
+            "🍃 Судьба готовит тебе приятный сюрприз.",
+            "🌟 Твои мечты гораздо ближе, чем кажется.",
+            "🍀 Удача уже идёт по твоему следу.",
+            "☀️ Сегодня твой день — смело действуй.",
+            "🌙 Вселенная на твоей стороне."
+        ];
+
+        const coconut = document.getElementById('coconut');
+        const scroll = document.getElementById('scroll');
+        const predictionText = document.getElementById('predictionText');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let isCracked = false;
+
+        function handleCrack() {
+            if (isCracked) return;
+            isCracked = true;
+
+            spawnSplinters();
+
+            coconut.classList.remove('floating');
+            coconut.classList.add('cracked');
+
+            predictionText.textContent = predictions[Math.floor(Math.random() * predictions.length)];
+
+            setTimeout(() => {
+                scroll.classList.add('show');
+                resetBtn.style.display = 'block';
+            }, 350);
+
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // Самое надежное стандартное событие для In-App браузеров мессенджеров
+        coconut.addEventListener('click', handleCrack);
+
+        resetBtn.addEventListener('click', (e) => {
+            isCracked = false;
+            resetBtn.style.display = 'none';
+            scroll.classList.remove('show');
+            coconut.classList.remove('cracked');
+            setTimeout(() => { 
+                if(!isCracked) coconut.classList.add('floating'); 
+            }, 600);
+        });
+
+        function spawnSplinters() {
+            for (let i = 0; i < 8; i++) {
+                const shard = document.createElement('div');
+                shard.classList.add('shard');
+                
+                const w = 3 + Math.random() * 4;
+                const h = 6 + Math.random() * 10;
+                shard.style.width = w + 'px';
+                shard.style.height = h + 'px';
+                shard.style.left = '160px';
+                shard.style.top = '170px';
+                
+                const tx = (Math.random() - 0.5) * 360 + 'px';
+                const ty = (Math.random() - 0.4) * 140 + 'px';
+                shard.style.setProperty('--tx', tx);
+                shard.style.setProperty('--ty', ty);
+                
+                coconut.parentElement.appendChild(shard);
+                setTimeout(() => shard.remove(), 600);
+            }
+        }
+    </script>
+</body>
+</html>
